@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Detecção de Sonolência</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .info-card {
+            border-left: 4px solid #007bff;
+            margin-bottom: 15px;
+        }
+        .warning-signs {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .chart-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .alert-indicator {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .alert-indicator.warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+        }
+        .alert-indicator.danger {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+        .science-info {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container">
+            <span class="navbar-brand mb-0 h1">Sistema de Detecção de Sonolência</span>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <!-- Coluna do Vídeo e Gráficos -->
+            <div class="col-lg-8">
+                <div class="video-container mb-4">
+                    <img src="{{ url_for('video_feed') }}" class="img-fluid rounded">
+                </div>
+                
+                <!-- Gráficos -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="chart-container">
+                            <h5>Frequência de Piscadas</h5>
+                            <canvas id="blinkChart"></canvas>
+                            <div class="science-info">
+                                <strong>Referência:</strong> Uma pessoa normal pisca em média 15-20 vezes por minuto. 
+                                Piscadas muito frequentes podem indicar sonolência.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="chart-container">
+                            <h5>Padrão de Abertura dos Olhos (EAR)</h5>
+                            <canvas id="earChart"></canvas>
+                            <div class="science-info">
+                                <strong>Referência:</strong> EAR (Eye Aspect Ratio) mede o quanto os olhos estão abertos. 
+                                Valores baixos indicam olhos fechados/semicerrados.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coluna de Informações -->
+            <div class="col-lg-4">
+                <!-- Status Atual -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">Status Atual</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="statusInfo">
+                            <p><strong>Estado:</strong> <span id="currentStatus">Normal</span></p>
+                            <p><strong>Piscadas (3s):</strong> <span id="blinkCount">0</span></p>
+                            <p><strong>Tempo olhos fechados:</strong> <span id="eyesClosedTime">0s</span></p>
+                            <p><strong>Tempo olhos estáticos:</strong> <span id="staticEyesTime">0s</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Indicadores de Sonolência -->
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="card-title mb-0">Indicadores de Sonolência</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert-indicator warning">
+                            <h6>🕒 Piscadas Frequentes</h6>
+                            <p><strong>Sintoma:</strong> Mais de 5 piscadas em 3 segundos</p>
+                            <p><strong>Causa:</strong> Fadiga ocular, sonolência inicial ou falta de concentração</p>
+                            <p><strong>Risco:</strong> Indica início de fadiga - recomenda-se atenção</p>
+                        </div>
+                        
+                        <div class="alert-indicator warning">
+                            <h6>👁️ Olhos Semicerrados</h6>
+                            <p><strong>Sintoma:</strong> Olhos permanecem parcialmente fechados</p>
+                            <p><strong>Causa:</strong> Dificuldade em manter os olhos abertos devido à sonolência</p>
+                            <p><strong>Risco:</strong> Redução da percepção visual e tempo de reação</p>
+                        </div>
+                        
+                        <div class="alert-indicator danger">
+                            <h6>💤 Micro-sono</h6>
+                            <p><strong>Sintoma:</strong> Olhos fechados por mais de 2 segundos</p>
+                            <p><strong>Causa:</strong> Sonolência severa, privação de sono</p>
+                            <p><strong>Risco:</strong> Extremamente perigoso - pode causar acidentes graves</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dicas de Prevenção -->
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="card-title mb-0">Dicas de Prevenção</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li>✓ Faça pausas a cada 2 horas de direção</li>
+                            <li>✓ Mantenha o veículo ventilado</li>
+                            <li>✓ Evite dirigir entre 2h e 5h da manhã</li>
+                            <li>✓ Durma pelo menos 7 horas antes de dirigir</li>
+                            <li>✓ Evite refeições pesadas antes de dirigir</li>
+                            <li>✓ Mantenha-se hidratado durante a viagem</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuração do gráfico de piscadas
+        const blinkCtx = document.getElementById('blinkChart').getContext('2d');
+        const blinkChart = new Chart(blinkCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Piscadas por intervalo',
+                    data: [],
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        suggestedMax: 10
+                    }
+                }
+            }
+        });
+
+        // Configuração do gráfico EAR
+        const earCtx = document.getElementById('earChart').getContext('2d');
+        const earChart = new Chart(earCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'EAR (Eye Aspect Ratio)',
+                    data: [],
+                    borderColor: 'rgb(255, 99, 132)',
+                    tension: 0.1,
+                    fill: true,
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        suggestedMax: 0.3
+                    }
+                }
+            }
+        });
+
+        // Atualização dos dados em tempo real
+        function updateData() {
+            fetch('/status')
+                .then(response => response.json())
+                .then(data => {
+                    // Atualiza status
+                    document.getElementById('currentStatus').textContent = data.status;
+                    document.getElementById('blinkCount').textContent = data.blink_count;
+                    document.getElementById('eyesClosedTime').textContent = data.eyes_closed_time + 's';
+                    document.getElementById('staticEyesTime').textContent = data.static_eyes_time + 's';
+
+                    // Atualiza gráfico de piscadas
+                    if (blinkChart.data.labels.length > 20) {
+                        blinkChart.data.labels.shift();
+                        blinkChart.data.datasets[0].data.shift();
+                    }
+                    blinkChart.data.labels.push(new Date().toLocaleTimeString());
+                    blinkChart.data.datasets[0].data.push(data.blink_count);
+                    blinkChart.update();
+
+                    // Atualiza gráfico EAR
+                    if (earChart.data.labels.length > 20) {
+                        earChart.data.labels.shift();
+                        earChart.data.datasets[0].data.shift();
+                    }
+                    earChart.data.labels.push(new Date().toLocaleTimeString());
+                    earChart.data.datasets[0].data.push(data.ear_value);
+                    earChart.update();
+
+                    // Atualiza cores baseado no status
+                    const statusElement = document.getElementById('currentStatus');
+                    if (data.status === 'Perigo') {
+                        statusElement.style.color = 'red';
+                    } else if (data.status === 'Atenção') {
+                        statusElement.style.color = 'orange';
+                    } else {
+                        statusElement.style.color = 'green';
+                    }
+                });
+        }
+
+        // Atualiza a cada segundo
+        setInterval(updateData, 1000);
+    </script>
+</body>
+</html> 
