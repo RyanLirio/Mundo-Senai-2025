@@ -1,5 +1,5 @@
 SISTEMA DE DETECÇÃO DE SONOLÊNCIA COM ESP32
-=========================================
+==========================================
 
 Este sistema detecta sonolência através da câmera e controla um LED no ESP32 para alertas.
 
