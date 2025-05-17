@@ -82,4 +82,4 @@ Observações:
 - Sistema testado em Windows 10
 - Usar cabo USB de qualidade para ESP32
 - Manter rosto bem iluminado para detecção
-- Ajustar EAR_LIMIAR se necessário (atual = 0.12) 
+- Ajustar EAR_LIMIAR se necessário (atual = 0.12).
